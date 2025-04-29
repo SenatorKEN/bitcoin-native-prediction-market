@@ -855,3 +855,41 @@
               (ok { input: amount, output: output-amount, fee: fee-amount }))))
       (err error-invalid-market))))
 
+;; Define governance proposal types
+(define-constant proposal-type-parameter 0x01)
+(define-constant proposal-type-upgrade 0x02)
+(define-constant proposal-type-treasury 0x03)
+
+;; Governance proposals
+(define-map governance-proposals
+  uint
+  {
+    proposer: principal,
+    title: (string-ascii 100),
+    description: (string-utf8 1000),
+    proposal-type: (buff 1),
+    parameter-key: (optional (string-ascii 50)),
+    parameter-value: (optional uint),
+    stx-amount: (optional uint),
+    recipient: (optional principal),
+    contract-to-call: (optional principal),
+    function-to-call: (optional (string-ascii 50)),
+    voting-start-block: uint,
+    voting-end-block: uint,
+    status: (buff 1),
+    yes-votes: uint,
+    no-votes: uint,
+    execution-block: (optional uint)
+  })
+
+;; Governance votes
+(define-map governance-votes
+  { proposal-id: uint, voter: principal }
+  { vote: (buff 1), weight: uint })
+
+(define-data-var proposal-id-nonce uint u0)
+
+;; Governance parameters
+(define-map governance-parameters
+  (string-ascii 50) ;; parameter key
+  { value: uint })
