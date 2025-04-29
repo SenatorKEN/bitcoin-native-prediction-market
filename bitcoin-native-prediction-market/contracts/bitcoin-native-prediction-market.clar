@@ -499,3 +499,20 @@
     (var-set template-id-nonce (+ template-id u1))
     
     (ok template-id)))
+
+;; Get market template
+(define-read-only (get-market-template (template-id uint))
+  (map-get? market-templates template-id))
+
+;; Create market from template
+(define-public (create-market-from-template 
+  (template-id uint) 
+  (oracle-address principal)
+  (metadata (optional (string-utf8 500))))
+  
+  (let ((template (unwrap! (map-get? market-templates template-id) error-invalid-params))
+        (resolution-block (+ stacks-block-height (get duration-blocks template))))
+    
+    ;; [Call to create-market function would go here with template values]
+    ;; Return the new market ID
+    (ok (var-get market-id-nonce))))
