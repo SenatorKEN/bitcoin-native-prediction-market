@@ -167,3 +167,13 @@
                                   (ok u0)))
                     (err error-invalid-market))
       (err error-invalid-market))))
+
+;; Get dispute details
+(define-read-only (get-dispute (market-id uint))
+  (map-get? disputes market-id))
+
+;; Get market analytics
+(define-read-only (get-market-analytics (market-id uint))
+  (map-get? market-analytics market-id))
+
+
