@@ -338,3 +338,15 @@
     (is-eq category "entertainment")
     (is-eq category "science")
     (is-eq category "other")))
+
+;; Get market category
+(define-read-only (get-market-category (market-id uint))
+  (map-get? market-categories market-id))
+
+;; Helper to check if sender is market creator or contract owner
+(define-private (is-market-creator-or-owner (market-id uint))
+  (let ((market (map-get? markets market-id)))
+    (match market
+      market-data (or (is-eq tx-sender (get creator market-data))
+                      (is-eq tx-sender contract-owner))
+      false)))
