@@ -27,7 +27,6 @@
 (define-data-var market-id-nonce uint u0)
 
 
-
 ;; Data structures
 (define-map markets
   uint
@@ -51,3 +50,27 @@
     outcome-values: (optional (list 10 uint)), ;; For scalar markets
     metadata: (optional (string-utf8 500))
   })
+
+  ;; Liquidity pools for each outcome
+(define-map liquidity-pools
+  { market-id: uint, outcome: (string-ascii 50) }
+  { amount: uint })
+
+;; User positions in markets
+(define-map positions
+  { market-id: uint, user: principal, outcome: (string-ascii 50) }
+  { amount: uint, claimed: bool })
+
+;; Oracles registry
+(define-map oracles
+  principal
+  {
+    stake: uint,
+    status: (buff 1),
+    reliability-score: uint,
+    markets-resolved: uint,
+    total-disputes: uint,
+    reputation: uint,
+    registration-block: uint
+  })
+
