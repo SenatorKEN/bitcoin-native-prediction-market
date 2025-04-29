@@ -74,3 +74,22 @@
     registration-block: uint
   })
 
+;; Oracle votes for market outcomes
+(define-map oracle-votes
+  { market-id: uint, oracle: principal }
+  { outcome: (string-ascii 50), confidence: uint, timestamp: uint })
+
+;; Disputes for market resolutions
+(define-map disputes
+  uint
+  {
+    disputer: principal,
+    original-outcome: (string-ascii 50),
+    proposed-outcome: (string-ascii 50),
+    evidence: (string-utf8 500),
+    stake: uint,
+    resolution-votes: (list 100 principal),
+    resolution-block: (optional uint),
+    status: (buff 1)
+  })
+
