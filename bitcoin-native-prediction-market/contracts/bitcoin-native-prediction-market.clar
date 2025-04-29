@@ -516,3 +516,30 @@
     ;; [Call to create-market function would go here with template values]
     ;; Return the new market ID
     (ok (var-get market-id-nonce))))
+
+    ;; Referral tracking
+(define-map referrals
+  { referred-user: principal }
+  { referrer: principal, active-until: uint, fee-share-percentage: uint })
+
+;; Referrer earnings
+(define-map referrer-earnings
+  principal
+  { total-earnings: uint, withdrawn-earnings: uint })
+
+;; Set referral
+(define-public (set-referral (referrer principal))
+  (begin
+    ;; Cannot refer yourself
+    (asserts! (not (is-eq tx-sender referrer)) error-invalid-params)
+    
+    ;; Set referral with 90-day expiration (approximately)
+    (map-set referrals 
+      { referred-user: tx-sender }
+      { 
+        referrer: referrer, 
+        active-until: (+ stacks-block-height u12960), ;; ~90 days in Bitcoin blocks
+        fee-share-percentage: u50 ;; 50% share of fees
+      })
+    
+    (ok true)))
