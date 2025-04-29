@@ -124,3 +124,28 @@
     
     (ok true)))
 
+;; Helper functions for enum conversions
+
+(define-private (get-market-status-buff (status (buff 1)))
+  status)
+
+(define-private (get-outcome-type-buff (type (buff 1)))
+  type)
+
+(define-private (get-oracle-status-buff (status (buff 1)))
+  status)
+
+(define-private (get-dispute-status-buff (status (buff 1)))
+  status)
+
+;; Get market details
+(define-read-only (get-market (market-id uint))
+  (map-get? markets market-id))
+
+;; Get market outcome pool
+(define-read-only (get-outcome-pool (market-id uint) (outcome (string-ascii 50)))
+  (map-get? liquidity-pools { market-id: market-id, outcome: outcome }))
+
+;; Get user position
+(define-read-only (get-user-position (market-id uint) (user principal) (outcome (string-ascii 50)))
+  (map-get? positions { market-id: market-id, user: user, outcome: outcome }))
