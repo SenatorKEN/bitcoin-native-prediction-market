@@ -383,3 +383,46 @@
 ;; Check if market is conditional
 (define-read-only (is-conditional-market (market-id uint))
   (is-some (map-get? conditional-markets market-id)))
+
+;; Notification types
+(define-constant notification-market-resolved 0x01)
+(define-constant notification-dispute-started 0x02)
+(define-constant notification-position-profitable 0x03)
+(define-constant notification-liquidity-update 0x04)
+(define-constant notification-oracle-vote 0x05)
+
+;; Notification storage
+(define-map user-notifications
+  { user: principal, notification-id: uint }
+  {
+    market-id: uint,
+    notification-type: (buff 1),
+    message: (string-utf8 200),
+    created-at: uint,
+    read: bool
+  })
+(define-data-var notification-id-nonce uint u0)
+
+;; Create notification (private helper)
+(define-private (create-notification 
+  (user principal) 
+  (market-id uint) 
+  (notification-type (buff 1))
+  (message (string-utf8 200)))
+  
+  (let ((notification-id (var-get notification-id-nonce)))
+    ;; Store notification
+    (map-set user-notifications
+      { user: user, notification-id: notification-id }
+      {
+        market-id: market-id,
+        notification-type: notification-type,
+        message: message,
+        created-at: stacks-block-height,
+        read: false
+      })
+    
+    ;; Increment nonce
+    (var-set notification-id-nonce (+ notification-id u1))
+    
+    notification-id))
