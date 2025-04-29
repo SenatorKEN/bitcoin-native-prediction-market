@@ -426,3 +426,17 @@
     (var-set notification-id-nonce (+ notification-id u1))
     
     notification-id))
+
+;; Get user notifications
+(define-read-only (get-user-notifications (user principal) (limit uint) (offset uint))
+  ;; This would need a more complex implementation to be efficient
+  ;; For now returning a placeholder
+  (ok (list)))
+
+;; Mark notification as read
+(define-public (mark-notification-read (notification-id uint))
+  (let ((notification (unwrap! (map-get? user-notifications { user: tx-sender, notification-id: notification-id }) error-invalid-params)))
+    (map-set user-notifications
+      { user: tx-sender, notification-id: notification-id }
+      (merge notification { read: true }))
+    (ok true)))
