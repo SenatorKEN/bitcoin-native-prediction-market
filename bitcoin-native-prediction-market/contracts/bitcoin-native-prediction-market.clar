@@ -350,3 +350,15 @@
       market-data (or (is-eq tx-sender (get creator market-data))
                       (is-eq tx-sender contract-owner))
       false)))
+
+;; Market tags
+(define-map market-tags
+  uint
+  (list 5 (string-ascii 20)))
+
+;; Set market tags
+(define-public (set-market-tags (market-id uint) (tags (list 5 (string-ascii 20))))
+  (begin
+    (asserts! (is-market-creator-or-owner market-id) error-unauthorized)
+    (map-set market-tags market-id tags)
+    (ok true)))
