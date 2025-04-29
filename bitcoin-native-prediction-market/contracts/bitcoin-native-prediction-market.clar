@@ -297,3 +297,16 @@
 (define-data-var total-markets-created uint u0)
 (define-data-var total-volume uint u0)
 (define-data-var total-fees-collected uint u0)
+
+(define-constant error-pool-liquidity (err u16))
+(define-constant error-max-liquidity (err u17))
+(define-constant error-paused (err u18))
+(define-constant error-invalid-withdrawal (err u19))
+(define-constant error-liquidity-locked (err u20))
+(define-constant error-threshold-not-met (err u21))
+(define-constant error-invalid-oracle (err u22))
+(define-constant error-invalid-fee (err u23))
+(define-constant error-invalid-category (err u24))
+
+;; Example from add-market-liquidity
+(asserts! (not (var-get protocol-paused)) error-paused)
