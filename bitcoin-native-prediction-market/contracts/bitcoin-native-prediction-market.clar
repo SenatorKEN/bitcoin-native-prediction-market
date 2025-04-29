@@ -205,4 +205,24 @@
       total-value: (+ (get total-value acc) (get amount position))
     }))
 
+(define-data-var protocol-paused bool false)
 
+(define-public (pause-protocol)
+  (begin
+    (asserts! (is-eq tx-sender contract-owner) error-unauthorized)
+    (var-set protocol-paused true)
+    (ok true)))
+
+(define-public (unpause-protocol)
+  (begin
+    (asserts! (is-eq tx-sender contract-owner) error-unauthorized)
+    (var-set protocol-paused false)
+    (ok true)))
+
+(define-data-var protocol-fee-collector principal contract-owner)
+
+(define-public (set-fee-collector (new-collector principal))
+  (begin
+    (asserts! (is-eq tx-sender contract-owner) error-unauthorized)
+    (var-set protocol-fee-collector new-collector)
+    (ok true)))
