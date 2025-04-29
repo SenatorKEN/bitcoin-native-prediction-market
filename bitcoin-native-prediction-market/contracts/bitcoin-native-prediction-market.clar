@@ -194,3 +194,15 @@
                     (err error-invalid-market))
       (err error-invalid-market))))
 
+
+;; Helper function to calculate positions value
+(define-private (calculate-positions-value (outcome (string-ascii 50)) (acc { user: principal, market-id: uint, total-value: uint }))
+  (let ((position (default-to { amount: u0, claimed: false } 
+                   (map-get? positions { market-id: (get market-id acc), user: (get user acc), outcome: outcome }))))
+    { 
+      user: (get user acc),
+      market-id: (get market-id acc),
+      total-value: (+ (get total-value acc) (get amount position))
+    }))
+
+
