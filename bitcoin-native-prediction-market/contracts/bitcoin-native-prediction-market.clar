@@ -824,3 +824,34 @@
         { tokens: (- (get tokens user-lp-balance) lp-amount) })
       
       (ok { yes-amount: yes-amount, no-amount: no-amount }))))
+
+;; Get AMM pool details
+(define-read-only (get-amm-pool (market-id uint))
+  (map-get? amm-pools market-id))
+
+;; Get AMM LP balance
+(define-read-only (get-amm-lp-balance (market-id uint) (provider principal))
+  (map-get? amm-lp-balances { market-id: market-id, provider: provider }))
+
+;; Get AMM price quote
+(define-read-only (get-amm-price-quote (market-id uint) (outcome (string-ascii 50)) (amount uint))
+  (let ((pool (map-get? amm-pools market-id)))
+    (match pool
+      pool-data 
+        (let ((yes-pool (get yes-pool pool-data))
+              (no-pool (get no-pool pool-data))
+              (fee-amount (/ (* amount amm-fee-percentage) u1000))
+              (amount-after-fee (- amount fee-amount)))
+          (if (is-eq outcome "Yes")
+            ;; Calculate Yes -> No swap
+            (let ((new-yes-pool (+ yes-pool amount-after-fee))
+                  (new-no-pool (/ (get constant-product pool-data) new-yes-pool))
+                  (output-amount (- no-pool new-no-pool)))
+              (ok { input: amount, output: output-amount, fee: fee-amount }))
+            ;; Calculate No -> Yes swap  
+            (let ((new-no-pool (+ no-pool amount-after-fee))
+                  (new-yes-pool (/ (get constant-product pool-data) new-no-pool))
+                  (output-amount (- yes-pool new-yes-pool)))
+              (ok { input: amount, output: output-amount, fee: fee-amount }))))
+      (err error-invalid-market))))
+
