@@ -743,3 +743,46 @@
           }))
         
         (ok { input: amount, output: output-amount, fee: fee-amount })))))
+
+
+;; Add liquidity to AMM
+(define-public (add-amm-liquidity (market-id uint) (yes-amount uint) (no-amount uint))
+  (let ((pool (unwrap! (map-get? amm-pools market-id) error-invalid-market))
+        (market (unwrap! (map-get? markets market-id) error-invalid-market))
+        (yes-pool (get yes-pool pool))
+        (no-pool (get no-pool pool))
+        (total-lp-tokens (get lp-tokens pool)))
+    
+    ;; Check market is active
+    (asserts! (is-eq (get status market) 0x01) error-invalid-state)
+    
+    ;; Calculate proportion of pool being added
+    (let ((yes-ratio (/ (* yes-amount u1000000) yes-pool))
+          (no-ratio (/ (* no-amount u1000000) no-pool)))
+      
+      ;; Ensure balanced liquidity addition
+      (asserts! (is-eq yes-ratio no-ratio) error-invalid-amount)
+      
+      ;; Calculate new LP tokens
+      (let ((new-lp-tokens (/ (* total-lp-tokens yes-ratio) u1000000))
+            (user-lp-balance (default-to { tokens: u0 } 
+                             (map-get? amm-lp-balances { market-id: market-id, provider: tx-sender }))))
+        
+        ;; Transfer funds to contract
+        (try! (stx-transfer? (+ yes-amount no-amount) tx-sender (as-contract tx-sender)))
+        
+        ;; Update pool state
+        (map-set amm-pools market-id
+          (merge pool {
+            yes-pool: (+ yes-pool yes-amount),
+            no-pool: (+ no-pool no-amount),
+            constant-product: (* (+ yes-pool yes-amount) (+ no-pool no-amount)),
+            lp-tokens: (+ total-lp-tokens new-lp-tokens)
+          }))
+        
+        ;; Update LP token balance
+        (map-set amm-lp-balances
+          { market-id: market-id, provider: tx-sender }
+          { tokens: (+ (get tokens user-lp-balance) new-lp-tokens) })
+        
+        (ok new-lp-tokens)))))
