@@ -566,3 +566,35 @@
         total-earnings: (+ (get total-earnings current-earnings) amount),
         withdrawn-earnings: (get withdrawn-earnings current-earnings)
       })))
+
+;; Withdraw referrer earnings
+(define-public (withdraw-referrer-earnings)
+  (let ((earnings (default-to { total-earnings: u0, withdrawn-earnings: u0 } 
+                  (map-get? referrer-earnings tx-sender)))
+        (available (- (get total-earnings earnings) (get withdrawn-earnings earnings))))
+    
+    ;; Check if anything to withdraw
+    (asserts! (> available u0) error-invalid-withdrawal)
+    
+    ;; Transfer earnings
+    (as-contract (try! (stx-transfer? available tx-sender tx-sender)))
+    
+    ;; Update withdrawn amount
+    (map-set referrer-earnings
+      tx-sender
+      { 
+        total-earnings: (get total-earnings earnings),
+        withdrawn-earnings: (+ (get withdrawn-earnings earnings) available)
+      })
+    
+    (ok available)))
+
+;; Get referrer earnings
+(define-read-only (get-referrer-earnings (referrer principal))
+  (let ((earnings (default-to { total-earnings: u0, withdrawn-earnings: u0 } 
+                  (map-get? referrer-earnings referrer))))
+    {
+      total: (get total-earnings earnings),
+      withdrawn: (get withdrawn-earnings earnings),
+      available: (- (get total-earnings earnings) (get withdrawn-earnings earnings))
+    }))
